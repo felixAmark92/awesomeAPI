@@ -19,13 +19,6 @@ type album struct {
 	Price  float64 `json:"price"`
 }
 
-// albums slice to seed record album data.
-var albums = []album{
-	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
-	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
-	{ID: "3", Title: "Sarah Vaughan and Clifford Brown", Artist: "Sarah Vaughan", Price: 39.99},
-}
-
 var client *mongo.Client
 
 func main() {
@@ -64,6 +57,30 @@ func main() {
 
 // getAlbums responds with the list of all albums as JSON.
 func getAlbums(c *gin.Context) {
+
+	coll := client.Database("goDb").Collection("albums")
+
+	filter := bson.D{{"artist", "Betty Carter"}}
+
+	result, err := coll.Find(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	defer result.Close(context.TODO())
+
+	var albums []bson.M
+	for result.Next(context.TODO()) {
+		var album bson.M
+		if err := result.Decode(&album); err != nil {
+			panic(err)
+		}
+		albums = append(albums, album)
+	}
+
+	if err := result.Err(); err != nil {
+		panic(err)
+	}
+
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
@@ -76,9 +93,9 @@ func postAlbums(c *gin.Context) {
 		return
 	}
 
-	// Add the new album to the mongoDb.
+	//establish connection to your MongoDb server
 	coll := client.Database("goDb").Collection("albums")
-
+	// Add the new album to the mongoDb.
 	result, err := coll.InsertOne(context.TODO(), newAlbum)
 	if err != nil {
 		panic(err)
