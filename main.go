@@ -2,18 +2,18 @@ package main
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"net/http"
 )
 
 const uri = "mongodb://localhost:27017"
 
 // album represents data about a record album.
 type album struct {
-	ID     string  `json:"id"`
 	Title  string  `json:"title"`
 	Artist string  `json:"artist"`
 	Price  float64 `json:"price"`
@@ -60,7 +60,7 @@ func getAlbums(c *gin.Context) {
 
 	coll := client.Database("goDb").Collection("albums")
 
-	filter := bson.D{{"artist", "Betty Carter"}}
+	filter := bson.D{{}}
 
 	result, err := coll.Find(context.TODO(), filter)
 	if err != nil {
